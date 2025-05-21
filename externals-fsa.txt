@@ -1,0 +1,6 @@
+give_item=0x802eb314
+post_swap_code=0x80001BF4
+check_moongate_open=0x802E8A34
+open_moongate=0x802e8898
+unlock_door=0x802C67B4
+door_exitfunc= 0x802C7C94
