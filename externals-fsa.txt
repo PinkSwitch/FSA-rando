@@ -4,3 +4,5 @@ check_moongate_open=0x802E8A34
 open_moongate=0x802e8898
 unlock_door=0x802C67B4
 door_exitfunc= 0x802C7C94
+draw_maiden = 0x8044EA94
+draw_crystal = 0x8044ED80

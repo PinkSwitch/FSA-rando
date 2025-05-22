@@ -6,6 +6,8 @@ extern "C" void check_moongate_open(void);
 extern "C" void open_moongate(void);
 extern "C" void unlock_door(void);
 extern "C" void door_exitfunc(void);
+extern "C" void draw_crystal(void);
+extern "C" void draw_maiden(void);
 
 int ItemGotFromServer;
 int ItemToGivePlayer;
@@ -13,6 +15,7 @@ int HasInvItem;
 int HasInvL2;
 int HasItemSpecial; //Moon pearl, letter, spellbook, power bracelet
 int CurLevelNum;
+int SavedMaidens = 0xFF;
 
 
 char KeysPerLevel[24] = { //Set to 04 testing purposes; Reset to zero for full release. High bits = doors opened
@@ -138,6 +141,21 @@ kmCallDefAsm(0x802C66C4) {  // Check for keys
 NoKeys:
 NobodyAtDoor:
 b door_exitfunc
+}
+
+kmBranchDefAsm(0x8044EA8C, NULL) {  // Check Current Maidens
+	nofralloc 
+	li r30, 1
+	slw r30, r30, r23
+	lis r3, SavedMaidens@ha
+	addi r3, r3, SavedMaidens@l
+	lwz r3, 0(r3)
+	and r3, r3, r30
+	cmpwi r3, 0
+	beq DrawCrystal
+	b draw_maiden
+DrawCrystal:
+	b draw_crystal
 }
 
 kmWrite32(0x80410170, 0x38000006); // Pull up save dialogue when exiting a level
