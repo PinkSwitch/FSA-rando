@@ -18,7 +18,7 @@ int HasInvItem;
 int HasInvL2;
 int HasItemSpecial; //Moon pearl, letter, spellbook, power bracelet
 int CurLevelNum;
-int SavedMaidens = 0xFF;
+int SavedMaidens;
 
 
 char KeysPerLevel[24] = { //Set to 04 testing purposes; Reset to zero for full release. High bits = doors opened
@@ -180,6 +180,32 @@ CheckSpellbook:
 ItemNotSet:
 	subis r0, r3, 19269
 	b no_quest_item
+}
+
+kmCallDefAsm(0x802544EC) {  // Give the player the Blue or Power Bracelet on map init
+	lis r4, HasItemSpecial@ha
+	addi r4, r4, HasItemSpecial@l
+	lwz r0, 0(r4)
+	andi. r0, r0, 0x08 // Check Blue Bracelet
+	cmpwi r0, 0
+	beq NoBB
+	li r0, 1
+	b HasBB
+NoBB:
+	li r0, 0
+HasBB:
+	stb r0, 0x0B7B (r31)
+CheckPowerBracelet:
+	lwz r0, 0(r4)
+	andi. r0, r0, 0x10 // Check Power Bracelet
+	cmpwi r0, 0
+	beq NoPB
+	li r0, 1
+	b WritePB
+NoPB:
+	li r0, 0
+WritePB:
+	stb r0, 0x0B7A (r31)
 }
 
 
