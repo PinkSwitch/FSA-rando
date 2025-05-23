@@ -8,6 +8,9 @@ extern "C" void unlock_door(void);
 extern "C" void door_exitfunc(void);
 extern "C" void draw_crystal(void);
 extern "C" void draw_maiden(void);
+extern "C" void no_quest_item(void);
+extern "C" void has_quest_item(void);
+extern "C" void has_spellbook(void);
 
 int ItemGotFromServer;
 int ItemToGivePlayer;
@@ -144,7 +147,7 @@ b door_exitfunc
 }
 
 kmBranchDefAsm(0x8044EA8C, NULL) {  // Check Current Maidens
-	nofralloc 
+	nofralloc
 	li r30, 1
 	slw r30, r30, r23
 	lis r3, SavedMaidens@ha
@@ -158,6 +161,28 @@ DrawCrystal:
 	b draw_crystal
 }
 
+kmBranchDefAsm(0x803840D4, NULL) {  // Check Quest Item
+	nofralloc
+	lis r3, HasItemSpecial@ha
+	addi r3, r3, HasItemSpecial@l
+	lwz r3, 0(r3)
+	cmpwi r21, 0x01d8
+	beq CheckSpellbook
+	andi. r3, r3, 0x02
+	cmpwi r3, 0
+	beq ItemNotSet
+	b has_quest_item
+CheckSpellbook:
+	andi. r3, r3, 0x04
+	cmpwi r3, 0
+	beq ItemNotSet
+	b has_spellbook
+ItemNotSet:
+	subis r0, r3, 19269
+	b no_quest_item
+}
+
+
 kmWrite32(0x80410170, 0x38000006); // Pull up save dialogue when exiting a level
 
 kmWrite32(0x80288A94, 0x38000001); // Disable pressing the Z button to close gameboy windows
@@ -167,3 +192,5 @@ kmWrite32(0x8041409C, 0x60000000); // Open all level paths
 kmWrite32(0x802C67B0, 0x60000000); //Make doors not check for the key's presence?
 
 kmWrite32(0x803EC450, 0x60000000); //Skip the intro
+
+// kmWrite32(0x80005530, 0x380000ff); //DOESNT WORK FIX SAVING
