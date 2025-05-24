@@ -11,6 +11,8 @@ extern "C" void draw_maiden(void);
 extern "C" void no_quest_item(void);
 extern "C" void has_quest_item(void);
 extern "C" void has_spellbook(void);
+extern "C" void ow_maiden_saved(void);
+extern "C" void ow_maiden_not_saved(void);
 
 int ItemGotFromServer;
 int ItemToGivePlayer;
@@ -18,7 +20,7 @@ int HasInvItem;
 int HasInvL2;
 int HasItemSpecial; //Moon pearl, letter, spellbook, power bracelet
 int CurLevelNum;
-int SavedMaidens;
+int SavedMaidens = 0xFF;
 
 
 char KeysPerLevel[24] = { //Set to 04 testing purposes; Reset to zero for full release. High bits = doors opened
@@ -206,6 +208,23 @@ NoPB:
 	li r0, 0
 WritePB:
 	stb r0, 0x0B7A (r31)
+}
+
+kmBranchDefAsm(0x804112B4, NULL) {  // Display the crystal on the overworld based on maidens owned
+	lis r4, 0x8113
+	ori r4, r4, 0xB4DC
+	lwz r4, 0(r4)
+	li r5, 1
+	slw r4, r5, r4
+	lis r5, SavedMaidens@ha
+	addi r5, r5, SavedMaidens@l
+	lwz r5, 0(r5)
+	and r4, r4, r5
+	cmpwi r4, 0
+	beq NoMaiden
+	b ow_maiden_saved
+NoMaiden:
+	b ow_maiden_not_saved
 }
 
 
