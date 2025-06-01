@@ -1,0 +1,19 @@
+<wiidisc version="1">
+	<id game="G4S" developer="01">
+		<region type="E"/> <!-- Only USA version supported -->
+	</id>
+	<options>
+		<section name="Four Swords Adventures Archipelago">
+			<option name="Mod" id="fsa" default="1">
+				<choice name="Enabled"><patch id="fsa"/></choice>
+			</option>
+		</section>
+	</options>
+	
+	<patch id="{{ GAME_ID }}">
+		<!-- This section is automatically injected by Kamek -->
+		$KF$
+		<memory offset="0x80001A00" value="{{ DUNGEONS }}">
+	</patch>
+	
+</wiidisc>

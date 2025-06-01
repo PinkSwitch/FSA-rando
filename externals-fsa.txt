@@ -9,6 +9,6 @@ draw_crystal = 0x8044ED80
 no_quest_item = 0x80384364
 has_quest_item = 0x8038412C
 has_spellbook = 0x8038414C
-
 ow_maiden_not_saved = 0x804112D0
 ow_maiden_saved = 0x8041154C
+current_world_in_level = 0x80529F04

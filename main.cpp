@@ -13,6 +13,7 @@ extern "C" void has_quest_item(void);
 extern "C" void has_spellbook(void);
 extern "C" void ow_maiden_saved(void);
 extern "C" void ow_maiden_not_saved(void);
+extern "C" void current_world_in_level(void);
 
 int ItemGotFromServer;
 int ItemToGivePlayer;
@@ -20,7 +21,8 @@ int HasInvItem;
 int HasInvL2;
 int HasItemSpecial; //Moon pearl, letter, spellbook, power bracelet
 int CurLevelNum;
-int SavedMaidens = 0xFF;
+int SavedMaidens;
+int UnlockedWorlds = 0xFF;
 
 
 char KeysPerLevel[24] = { //Set to 04 testing purposes; Reset to zero for full release. High bits = doors opened
@@ -227,6 +229,41 @@ NoMaiden:
 	b ow_maiden_not_saved
 }
 
+kmCallDefAsm(0x8040DF8C) {  // Lock world movement based on Worlds Unlocked
+CheckNext:
+	li r5, 1
+	slw r4, r5, r0 //Get the bit for the current level
+	lis r5, UnlockedWorlds@ha
+	addi r5, r5, UnlockedWorlds@l
+	lwz r5, 0(r5)
+	and r4, r4, r5
+	cmpwi r4, 0
+	beq CheckNextWorld
+Exit:
+	stw r0, 0x0340(r30)
+	blr
+CheckNextWorld:
+	cmpwi r0, 9
+	beq Exit
+	mr r5, r0
+	addi r5, r5, 1
+	mr r0, r5
+	b CheckNext
+}
+
+kmCallDefAsm(0x80450890) {  // Set collected Maiden as active
+	lis r4, current_world_in_level@ha  
+	addi r4, r4, current_world_in_level@l
+	lwz r4, 0(r4)
+	li r5, 1
+	slw r4, r5, r4
+	lis r5, SavedMaidens@ha
+	addi r5, r5, SavedMaidens@l
+	lwz r5, 0(r5)
+	or r4, r4, r5
+	lis r5, SavedMaidens@ha
+	stw r4, SavedMaidens@l(r5)
+	}
 
 kmWrite32(0x80410170, 0x38000006); // Pull up save dialogue when exiting a level
 
