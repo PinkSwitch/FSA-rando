@@ -14,6 +14,13 @@ extern "C" void has_spellbook(void);
 extern "C" void ow_maiden_saved(void);
 extern "C" void ow_maiden_not_saved(void);
 extern "C" void current_world_in_level(void);
+extern "C" void current_selected_world(void);
+extern "C" void current_selected_stage(void);
+extern "C" void select_stage(void);
+extern "C" void play_sfx(void);
+extern "C" void end_select(void);
+extern "C" void value_for_sound_play(void);
+extern "C" void total_maidens_required(void);
 
 int ItemGotFromServer;
 int ItemToGivePlayer;
@@ -265,9 +272,64 @@ kmCallDefAsm(0x80450890) {  // Set collected Maiden as active
 	stw r4, SavedMaidens@l(r5)
 	}
 
+kmBranchDefAsm(0x8040AF14, NULL) {  // Block the Palace of Winds until the maiden requirement is clear
+	nofralloc
+	lis r3, current_selected_world@ha
+	addi r3, r3, current_selected_world@l
+	lwz r3, 0(r3)
+	lis r4, current_selected_stage@ha
+	addi r4, r4, current_selected_stage@l
+	lwz r4, 0(r4)
+	mulli r3, r3, 3
+	add r3, r3, r4
+	cmpwi r3, 0x17
+	beq PalaceMaidenCheck
+EnterPalace:
+	lis r5, CurLevelNum@ha
+	addi r5, r5, CurLevelNum@l
+	stw r3, 0(r5)
+	stfs  f31, 0x0394(r30)
+	b select_stage
+PalaceMaidenCheck:
+	mr r0, r3
+	lis r3, SavedMaidens@ha
+	addi r3, r3, SavedMaidens@l
+	lwz r3, 0(r3) // Load the Bitfield of Maidens the player has saved
+	li r4, 0
+	li r7, 0
+BitCountLoop:
+	li r5, 1
+	slw r6, r5, r4 //Get the current bit in 6
+	and r5, r6, r3 // 3 has the bitfield, 6 has the current bit
+	cmpwi r5, 0
+	beq MaidenBitNotSet
+	addi r7, r7, 1 // Add 1 to the total maidens saved
+MaidenBitNotSet:
+	cmpwi r4, 6 // Have we checked all 7 bits?
+	beq ExitBitLoop //If yes, end
+	addi r4, r4, 1 //If no, add 1 and check again
+	b BitCountLoop
+ExitBitLoop:
+	lis r5, total_maidens_required@ha
+	addi r5, r5, total_maidens_required@l
+	lwz r5, 0(r5)
+	cmpw r7, r5
+	blt PlayErrorAndCancel
+	mr r3, r0
+	b EnterPalace
+PlayErrorAndCancel:
+	li r4, 6
+	lis r5, value_for_sound_play@ha
+	addi r5, r5, value_for_sound_play@l
+	mr r3, r5
+	li r5, -1 // for reasons yet unknown the sound only plays if r3 and r5 have these values
+	bl play_sfx
+	b end_select
+	}
+
 kmWrite32(0x80410170, 0x38000006); // Pull up save dialogue when exiting a level
 
-kmWrite32(0x80288A94, 0x38000001); // Disable pressing the Z button to close gameboy windows
+kmWrite32(0x80288A94, 0x38000001); // Disable pressing the Z button to close gameboy windows (this is done since Z is the item swap now)
 
 kmWrite32(0x8041409C, 0x60000000); // Open all level paths
 
