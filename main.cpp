@@ -24,8 +24,8 @@ extern "C" void total_maidens_required(void);
 
 int ItemGotFromServer;
 int ItemToGivePlayer;
-int HasInvItem;
-int HasInvL2;
+int HasInvItem = 0xFFFF;
+int HasInvL2 = 0xFFFF0000;
 int HasItemSpecial; //Moon pearl, letter, spellbook, power bracelet
 int CurLevelNum;
 int SavedMaidens;
@@ -327,6 +327,18 @@ PlayErrorAndCancel:
 	b end_select
 	}
 
+kmCallDefAsm(0x802C3DE8) {  // Delete Key/Pearl when touched
+	stb r0, 0x02B5(r25)
+	li r4, 0
+	stw r4, 0x011C(r25)
+	}
+
+kmCallDefAsm(0x802C4A60) {  // Delete Key/Pearl when picked up
+	stb r0, 0x02B5(r31)
+	li r0, 0
+	stw r0, 0x011C(r31)
+	}
+
 kmWrite32(0x80410170, 0x38000006); // Pull up save dialogue when exiting a level
 
 kmWrite32(0x80288A94, 0x38000001); // Disable pressing the Z button to close gameboy windows (this is done since Z is the item swap now)
@@ -336,5 +348,7 @@ kmWrite32(0x8041409C, 0x60000000); // Open all level paths
 kmWrite32(0x802C67B0, 0x60000000); //Make doors not check for the key's presence?
 
 kmWrite32(0x803EC450, 0x60000000); //Skip the intro
+
+kmWrite32(0x802C67C4, 0x60000000); //Prevent held item from getting deleted when unlocking something
 
 // kmWrite32(0x80005530, 0x380000ff); //DOESNT WORK FIX SAVING
