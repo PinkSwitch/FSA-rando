@@ -25,7 +25,7 @@ extern "C" void total_maidens_required(void);
 int ItemGotFromServer;
 int ItemToGivePlayer;
 int HasInvItem = 0xFFFF;
-int HasInvL2 = 0xFFFFFFFF;
+int HasInvL2 = 0xFF;
 int HasItemSpecial; //Moon pearl, letter, spellbook, power bracelet
 int CurLevelNum;
 int SavedMaidens;
@@ -78,7 +78,7 @@ CheckIfItemShouldLevel:
 	lwz r4, 0x0C10(r3)
 	cmpwi r4, 0
 	beq GetItemFromServer
-	lis r6, 1
+	li r6, 1
 	slw r6, r6, r4
 	lis r5, HasInvL2@ha
 	addi r5, r5, HasInvL2@l
@@ -365,5 +365,7 @@ kmWrite32(0x802C67B0, 0x60000000); //Make doors not check for the key's presence
 kmWrite32(0x803EC450, 0x60000000); //Skip the intro
 
 kmWrite32(0x802C67C4, 0x60000000); //Prevent held item from getting deleted when unlocking something
+
+kmWrite32(0x8038DF9C, 0x60000000); //Disable great fairy upgrades
 
 // kmWrite32(0x80005530, 0x380000ff); //DOESNT WORK FIX SAVING
