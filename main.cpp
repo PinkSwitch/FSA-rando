@@ -93,6 +93,12 @@ Level1:
 	li r4, 0
 	stw r4, 0x0C14(r3)
 GetItemFromServer:
+	lwz r3, 0x1240(r31)
+	cmpwi r3, 0x04
+	bge noItem
+	lwz r3, 0x0454(r31)
+	cmpwi r3, 0
+	bne noItem
 	lis r3, ItemGotFromServer@ha
 	lwz r4, ItemGotFromServer@l(r3)
 	cmpwi r4, 0
