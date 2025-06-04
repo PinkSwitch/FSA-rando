@@ -25,15 +25,17 @@ extern "C" void total_maidens_required(void);
 int ItemGotFromServer;
 int ItemToGivePlayer;
 int HasInvItem = 0xFFFF;
-int HasInvL2 = 0xFFFF0000;
+int HasInvL2 = 0xFFFFFFFF;
 int HasItemSpecial; //Moon pearl, letter, spellbook, power bracelet
 int CurLevelNum;
 int SavedMaidens;
 int UnlockedWorlds = 0xFF;
+int TotalHearts = 0x0C;
+int TotalGems = 69;
 
 
 char KeysPerLevel[24] = { //Set to 04 testing purposes; Reset to zero for full release. High bits = doors opened
-	0x04, 0x00, 0x00,
+	0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00,
@@ -337,6 +339,19 @@ kmCallDefAsm(0x802C4A60) {  // Delete Key/Pearl when picked up
 	stb r0, 0x02B5(r31)
 	li r0, 0
 	stw r0, 0x011C(r31)
+	}
+
+kmCallDefAsm(0x802545AC) {  // Load Hearts and total Gems
+	lis r4, TotalGems@ha
+	addi r4, r4, TotalGems@l
+	lwz r4, 0(r4)
+	stw r4, 0x0C04(r31)
+GetHearts:
+	lis r4, TotalHearts@ha
+	addi r4, r4, TotalHearts@l
+	lwz r4, 0(r4)
+	stw r4, 0x0BF8(r31)
+	stw r4, 0x0BFC(r31) //set current hearts to max
 	}
 
 kmWrite32(0x80410170, 0x38000006); // Pull up save dialogue when exiting a level
