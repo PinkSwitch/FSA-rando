@@ -25,13 +25,13 @@ extern "C" void total_maidens_required(void);
 int ItemGotFromServer;
 int ItemToGivePlayer;
 int HasInvItem = 0xFFFF;
-int HasInvL2 = 0xFF;
+int HasInvL2 = 0xFFFF;
 int HasItemSpecial; //Moon pearl, letter, spellbook, power bracelet
 int CurLevelNum;
 int SavedMaidens;
 int UnlockedWorlds = 0xFF;
 int TotalHearts = 0x0C;
-int TotalGems = 69;
+int TotalGems;
 
 
 char KeysPerLevel[24] = { //Set to 04 testing purposes; Reset to zero for full release. High bits = doors opened
@@ -373,5 +373,9 @@ kmWrite32(0x803EC450, 0x60000000); //Skip the intro
 kmWrite32(0x802C67C4, 0x60000000); //Prevent held item from getting deleted when unlocking something
 
 kmWrite32(0x8038DF9C, 0x60000000); //Disable great fairy upgrades
+
+kmWrite32(0x8040DF90, 0x38600008); //Force world map movement to assume 8 worlds; overwritten by unlock status
+
+kmWrite32(0x8040DC98, 0x38000008); //Force world map movement to assume 8 worlds; overwritten by unlock status
 
 // kmWrite32(0x80005530, 0x380000ff); //DOESNT WORK FIX SAVING
