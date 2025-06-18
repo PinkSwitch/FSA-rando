@@ -21,16 +21,18 @@ extern "C" void play_sfx(void);
 extern "C" void end_select(void);
 extern "C" void value_for_sound_play(void);
 extern "C" void total_maidens_required(void);
+extern "C" void single_jump(void);
+extern "C" void double_jump(void);
 
 int ItemGotFromServer;
 int ItemToGivePlayer;
 int HasInvItem = 0xFFFF;
 int HasInvL2 = 0xFFFF;
-int HasItemSpecial; //Moon pearl, letter, spellbook, power bracelet
+int HasItemSpecial; //Moon pearl, letter, spellbook, blue bracelet, power bracelet, sword upgrade
 int CurLevelNum;
 int SavedMaidens;
-int UnlockedWorlds = 0xFF;
-int TotalHearts = 0x0C;
+int UnlockedWorlds = 0x01;
+int TotalHearts = 0x10;
 int TotalGems;
 
 
@@ -45,9 +47,20 @@ char KeysPerLevel[24] = { //Set to 04 testing purposes; Reset to zero for full r
 	0x00, 0x00, 0x00,
 };
 
+unsigned short WorldButtonPointers[8] = {
+	0xCD10, 0xCB78, 0xC9E0, 0xC848,
+	0xC6B0, 0xC518, 0xC380, 0xC1E8
+};
+
+
 
 kmBranchDefAsm(0x80241790, NULL) {  // Give Remote Item to Player
-	CheckItemSwap:
+CheckItemSwap:
+	lwz r4, 0x1240(r31)
+	cmpwi r4, 0x46
+	beq GetItemFromServer
+	cmpwi r4, 0x14
+	beq GetItemFromServer
 	lis r4, 0x8053
 	lbz r4, 0xea5f(r4)
 	cmpwi r4, 0x10
@@ -358,6 +371,58 @@ GetHearts:
 	lwz r4, 0(r4)
 	stw r4, 0x0BF8(r31)
 	stw r4, 0x0BFC(r31) //set current hearts to max
+	}
+
+kmCallDefAsm(0x802544E4) {  // Load persistent sword
+	lis r3, HasItemSpecial@ha
+	addi r3, r3, HasItemSpecial@l
+	andi. r3, r3, 0x20
+	cmpwi r3, 0
+	beq NormalSword
+	li r4, 2
+	b AddSword
+NormalSword:
+	li r4, 1
+AddSword:
+	stw r4, 0x0C18(r31)
+	}
+
+kmCallDefAsm(0x8040814C) {  // Draw map tabs
+	nofralloc
+	li r31, 0
+ButtonNextWorld:
+	li r29, 1
+	slw r29, r29, r31 // get the bit of the current loop iteration
+	lis r3, WorldButtonPointers@ha
+	addi r3, r3, WorldButtonPointers@l
+	slwi r5, r31, 1
+	lhzx r30, r3, r5
+	oris r30, r30, 0x8116
+	lis r3, UnlockedWorlds@ha
+	addi r3, r3, UnlockedWorlds@l
+	lwz r3, 0(r3) //Load the value of the total world bitfield
+	and r3, r3, r29
+	cmpwi r3, 0
+	beq RemoveButton
+	li r3, 0xFF
+	stw r3, 0x11C(r30)
+	stw r3, 0x94(r30)
+	li r3, 0x50
+	stw r3, 0x0C(r30)
+	b ButtonCommon
+RemoveButton:
+	li r3, 0
+	stw r3, 0x11C(r30)
+	stw r3, 0x94(r30)
+	stw r3, 0x0C(r30)
+ButtonCommon:
+	cmpwi r31, 7
+	beq ButtonEnd
+	addi r31, r31, 1
+	b ButtonNextWorld
+ButtonEnd:
+	lis r3, 0x8049
+	blr
 	}
 
 kmWrite32(0x80410170, 0x38000006); // Pull up save dialogue when exiting a level
